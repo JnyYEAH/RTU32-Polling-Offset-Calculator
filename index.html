@@ -13,7 +13,7 @@
     <div id="root"></div>
     
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
         
         function Calculator({ className, ...props }) {
             return (
@@ -37,19 +37,26 @@
             const [dnp3Set, setDnp3Set] = useState('');
             const [results, setResults] = useState(null);
 
-            const calculateOffsets = () => {
+            const handleAddressChange = (e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                setDnp3Address(value);
+            };
+
+            const handleSetChange = (e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                setDnp3Set(value);
+            };
+
+            const handleCalculate = () => {
                 if (!dnp3Address || !dnp3Set) {
-                    setResults(null);
                     return;
                 }
 
                 if (!/^\d{5}$/.test(dnp3Address)) {
-                    setResults(null);
                     return;
                 }
 
                 if (!/^\d{2,3}$/.test(dnp3Set)) {
-                    setResults(null);
                     return;
                 }
 
@@ -61,10 +68,10 @@
                 const minutes = integrityMinutes % 60;
                 const integrityFormatted = `${hours}H${minutes}M`;
 
-                const lastTwoDigitsAddress = parseInt(dnp3Address.slice(-2));
+                const lastTwoDigitsAddress = address % 100;
                 const offsetMinutes = lastTwoDigitsAddress % 15;
 
-                const lastTwoDigitsSet = parseInt(dnp3Set.slice(-2));
+                const lastTwoDigitsSet = set % 100;
                 const offsetSeconds = (lastTwoDigitsSet % 55) + 5;
 
                 const combinedOffset = `${offsetMinutes}M${offsetSeconds}S`;
@@ -78,30 +85,6 @@
                 });
             };
 
-            const handleAddressChange = (e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-                setDnp3Address(value);
-                setTimeout(() => {
-                    if (value && dnp3Set) {
-                        calculateOffsets();
-                    }
-                }, 0);
-            };
-
-            const handleSetChange = (e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                setDnp3Set(value);
-                setTimeout(() => {
-                    if (dnp3Address && value) {
-                        calculateOffsets();
-                    }
-                }, 0);
-            };
-
-            useEffect(() => {
-                calculateOffsets();
-            }, [dnp3Address, dnp3Set]);
-
             const isValidAddress = dnp3Address.length === 5;
             const isValidSet = dnp3Set.length >= 2 && dnp3Set.length <= 3;
 
@@ -114,7 +97,7 @@
                                 <h1 className="text-3xl font-bold text-gray-800">DNP3 Offset Calculator</h1>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         DNP3 Address <span className="text-gray-500">(5 digits)</span>
@@ -158,7 +141,17 @@
                                 </div>
                             </div>
 
-                            {results && isValidAddress && isValidSet && (
+                            <div className="mb-8">
+                                <button
+                                    onClick={handleCalculate}
+                                    disabled={!isValidAddress || !isValidSet}
+                                    className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition text-lg"
+                                >
+                                    Calculate
+                                </button>
+                            </div>
+
+                            {results && (
                                 <div className="space-y-4">
                                     <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
                                         <h2 className="text-lg font-semibold text-purple-900 mb-2">
@@ -204,16 +197,16 @@
                                 </div>
                             )}
 
-                            {(!dnp3Address || !dnp3Set) && (
+                            {!results && (
                                 <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 text-center">
                                     <p className="text-gray-600">
-                                        Enter both DNP3 Address and Set to calculate offsets
+                                        Enter both DNP3 Address and Set, then click Calculate
                                     </p>
                                 </div>
                             )}
 
                             {dnp3Address && dnp3Set && (!isValidAddress || !isValidSet) && (
-                                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-4">
                                     <p className="text-red-700">
                                         Please check your inputs:
                                         {!isValidAddress && ' DNP3 Address must be exactly 5 digits.'}
@@ -233,15 +226,15 @@
 </html>
 ```
 
-## **To add to GitHub:**
+**To deploy to GitHub:**
 
-1. Go to your repository (or create a new one called `dnp3-offset-calculator`)
+1. Go to your repository (or create new one: `dnp3-offset-calculator`)
 2. Click **"Add file"** → **"Create new file"**
 3. Name it `index.html`
 4. Copy and paste ALL the code above
 5. Click **"Commit new file"**
 6. Go to **Settings → Pages**
-7. Select **"main"** branch and click **Save**
+7. Select **"main"** branch, click **Save**
 
 Your app will be live at:
 ```
